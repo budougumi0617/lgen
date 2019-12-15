@@ -29,7 +29,6 @@ type Params struct {
 }
 
 func fill(args []string, outStream, errStream io.Writer) (*lgen, error) {
-
 	var v bool
 	var a, m, t, d string
 	vdesc := "print version information and quit."
@@ -82,13 +81,21 @@ func fill(args []string, outStream, errStream io.Writer) (*lgen, error) {
 	}, nil
 }
 
+func (l *lgen) run() error {
+	// TODO: load templates in directory.
+	// TODO: compile template.
+	// TODO: build saved file path.
+	// TODO: create saved directory.
+	// TODO: write directory.
+	return nil
+}
+
 // Run is entry point.
 func Run(args []string, outStream, errStream io.Writer) error {
-
 	lgen, err := fill(args, outStream, errStream)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("%v", lgen)
-	return nil
+	return lgen.run()
 }
