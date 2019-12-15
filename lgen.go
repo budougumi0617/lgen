@@ -1,10 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
+	"go/format"
+	"html/template"
 	"io"
+	"os"
+	"path/filepath"
 )
 
 const (
@@ -83,10 +88,39 @@ func fill(args []string, outStream, errStream io.Writer) (*lgen, error) {
 
 func (l *lgen) run() error {
 	// TODO: load templates in directory.
+	return filepath.Walk(l.template, l.walk)
+}
+
+func (l *lgen) walk(p string, info os.FileInfo, err error) error {
+	if info.IsDir() {
+		// mkdir
+		return nil
+	}
 	// TODO: compile template.
+	buf := bytes.Buffer{}
+	tmpl := ""
+	sp := "" // 保存用のPATHを組み立てる
+	if err := template.Must(template.New(sp).Parse(tmpl)).Execute(&buf, l.params); err != nil {
+		panic(err)
+	}
+
+	codes, err := format.Source(buf.Bytes())
+	if err != nil {
+		panic(err)
+	}
 	// TODO: build saved file path.
+	f, err := os.Create(sp)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = f.Close() }()
 	// TODO: create saved directory.
+	// mkdirとかする
 	// TODO: write directory.
+
+	if _, err = f.Write(codes); err != nil {
+		panic(err)
+	}
 	return nil
 }
 
