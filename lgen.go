@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -74,13 +75,22 @@ func fill(args []string, outStream, errStream io.Writer) (*lgen, error) {
 		msg := "non-flag option must be zero."
 		return nil, fmt.Errorf(msg)
 	}
+	var err error
+	t, err = filepath.Abs(t)
+	if err != nil {
+		panic(err)
+	}
+	d, err = filepath.Abs(d)
+	if err != nil {
+		panic(err)
+	}
 	return &lgen{
 		params: Params{
 			Action: a,
 			Model:  "m",
 		},
-		template:  "",
-		dist:      "",
+		template:  t,
+		dist:      d,
 		outStream: outStream,
 		errStream: errStream,
 	}, nil
@@ -91,15 +101,34 @@ func (l *lgen) run() error {
 	return filepath.Walk(l.template, l.walk)
 }
 
-func (l *lgen) walk(p string, info os.FileInfo, err error) error {
+func (l *lgen) buildFileName(base string) string {
+	return strings.ToLower(strings.Join([]string{l.params.Action, l.params.Model, base}, "_"))
+}
+
+func (l *lgen) walk(path string, info os.FileInfo, err error) error {
+	p, err := filepath.Rel(l.template, path)
+	if err != nil {
+		panic(err)
+	}
+	fp := filepath.Join(l.dist, p)
+
 	if info.IsDir() {
-		// mkdir
+		// TODO: create saved directory.
+		fmt.Println("mkdir!!!", fp)
+		if err := os.MkdirAll(fp, 0777); err != nil {
+			panic(err)
+		}
 		return nil
 	}
 	// TODO: compile template.
+	dn, fn := filepath.Split(fp)
+	sp := filepath.Join(dn, l.buildFileName(fn))
+	fmt.Println("output path:", sp)
+
 	buf := bytes.Buffer{}
-	tmpl := ""
-	sp := "" // 保存用のPATHを組み立てる
+	tmpl := `action:{{- .Action }}
+model:{{- .Model }}
+`
 	if err := template.Must(template.New(sp).Parse(tmpl)).Execute(&buf, l.params); err != nil {
 		panic(err)
 	}
@@ -108,15 +137,15 @@ func (l *lgen) walk(p string, info os.FileInfo, err error) error {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("l.params.Action = %q\n", l.params.Action)
+	fmt.Printf("codes = %q\n", codes)
+	fmt.Printf("codes = %q\n", codes)
 	// TODO: build saved file path.
 	f, err := os.Create(sp)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = f.Close() }()
-	// TODO: create saved directory.
-	// mkdirとかする
-	// TODO: write directory.
 
 	if _, err = f.Write(codes); err != nil {
 		panic(err)
