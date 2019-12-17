@@ -8,6 +8,7 @@ import (
 	"go/format"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -87,7 +88,7 @@ func fill(args []string, outStream, errStream io.Writer) (*lgen, error) {
 	return &lgen{
 		params: Params{
 			Action: a,
-			Model:  "m",
+			Model:  m,
 		},
 		template:  t,
 		dist:      d,
@@ -110,6 +111,8 @@ func (l *lgen) buildFileName(base string) string {
 }
 
 func (l *lgen) walk(path string, info os.FileInfo, err error) error {
+	fmt.Printf("path = %+v\n", path)
+
 	p, err := filepath.Rel(l.template, path)
 	if err != nil {
 		panic(err)
@@ -119,6 +122,7 @@ func (l *lgen) walk(path string, info os.FileInfo, err error) error {
 	if info.IsDir() {
 		// make same directory structure in distribution.
 		if err := os.MkdirAll(fp, 0777); err != nil {
+			fmt.Println("mkdillall")
 			panic(err)
 		}
 		return nil
@@ -133,17 +137,25 @@ func (l *lgen) walk(path string, info os.FileInfo, err error) error {
 
 	buf := bytes.Buffer{}
 	// TODO: load template from file.
-	tmpl := `action = "{{- .Action }}"
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println("ioutl.ReadFile")
+		panic(err)
+	}
+
+	dtmpl := `action = "{{- .Action }}"
 model: "{{- .Model }}"
 `
 	dtmpl = string(b)
 	if err := template.Must(template.New(sp).Funcs(fmap).Parse(dtmpl)).Execute(&buf, l.params); err != nil {
+		fmt.Println("template execute")
 		panic(err)
 	}
 
 	// execute gofmt
 	codes, err := format.Source(buf.Bytes())
 	if err != nil {
+		fmt.Printf("%q\n", buf.Bytes())
 		panic(err)
 	}
 
