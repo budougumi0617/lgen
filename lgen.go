@@ -123,6 +123,11 @@ func (l *lgen) walk(path string, info os.FileInfo, err error) error {
 		}
 		return nil
 	}
+	if filepath.Ext(path) != ".go" {
+		fmt.Println("skip file!!")
+		return nil
+	}
+
 	dn, fn := filepath.Split(fp)
 	sp := filepath.Join(dn, l.buildFileName(fn))
 
