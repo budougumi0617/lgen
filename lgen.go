@@ -97,10 +97,10 @@ func fill(args []string, outStream, errStream io.Writer) (*lgen, error) {
 }
 
 func (l *lgen) run() error {
-	// TODO: load templates in directory.
 	return filepath.Walk(l.template, l.walk)
 }
 
+// make file name with action and model.
 func (l *lgen) buildFileName(base string) string {
 	return strings.ToLower(strings.Join([]string{l.params.Action, l.params.Model, base}, "_"))
 }
@@ -113,34 +113,35 @@ func (l *lgen) walk(path string, info os.FileInfo, err error) error {
 	fp := filepath.Join(l.dist, p)
 
 	if info.IsDir() {
-		// TODO: create saved directory.
-		fmt.Println("mkdir!!!", fp)
+		// make same directory structure in distribution.
 		if err := os.MkdirAll(fp, 0777); err != nil {
 			panic(err)
 		}
 		return nil
 	}
-	// TODO: compile template.
 	dn, fn := filepath.Split(fp)
 	sp := filepath.Join(dn, l.buildFileName(fn))
-	fmt.Println("output path:", sp)
 
 	buf := bytes.Buffer{}
-	tmpl := `action:{{- .Action }}
-model:{{- .Model }}
+	// TODO: load template from file.
+	tmpl := `action = "{{- .Action }}"
+model: "{{- .Model }}"
 `
+	// TODO: Set strings.Title
 	if err := template.Must(template.New(sp).Parse(tmpl)).Execute(&buf, l.params); err != nil {
 		panic(err)
 	}
 
+	// execute gofmt
 	codes, err := format.Source(buf.Bytes())
 	if err != nil {
 		panic(err)
 	}
+
 	fmt.Printf("l.params.Action = %q\n", l.params.Action)
 	fmt.Printf("codes = %q\n", codes)
 	fmt.Printf("codes = %q\n", codes)
-	// TODO: build saved file path.
+	// TODO: Need warning if overwrite file?
 	f, err := os.Create(sp)
 	if err != nil {
 		return err
