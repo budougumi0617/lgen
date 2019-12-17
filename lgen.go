@@ -100,6 +100,10 @@ func (l *lgen) run() error {
 	return filepath.Walk(l.template, l.walk)
 }
 
+var fmap = template.FuncMap{
+	"title": strings.Title,
+}
+
 // make file name with action and model.
 func (l *lgen) buildFileName(base string) string {
 	return strings.ToLower(strings.Join([]string{l.params.Action, l.params.Model, base}, "_"))
@@ -127,8 +131,8 @@ func (l *lgen) walk(path string, info os.FileInfo, err error) error {
 	tmpl := `action = "{{- .Action }}"
 model: "{{- .Model }}"
 `
-	// TODO: Set strings.Title
-	if err := template.Must(template.New(sp).Parse(tmpl)).Execute(&buf, l.params); err != nil {
+	dtmpl = string(b)
+	if err := template.Must(template.New(sp).Funcs(fmap).Parse(dtmpl)).Execute(&buf, l.params); err != nil {
 		panic(err)
 	}
 
