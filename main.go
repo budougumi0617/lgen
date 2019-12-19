@@ -6,6 +6,12 @@ import (
 	"os"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
 	log.SetFlags(0)
 	err := Run(os.Args, os.Stdout, os.Stderr)

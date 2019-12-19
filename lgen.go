@@ -14,10 +14,6 @@ import (
 	"strings"
 )
 
-const (
-	version = "0.0.1"
-)
-
 var (
 	// ErrShowVersion returns when set version flag.
 	ErrShowVersion = errors.New("show version")
