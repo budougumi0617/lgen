@@ -13,7 +13,7 @@ At first, we prepare layered structure and templates.
 
 ```bash
 $ tree templates
-testdata
+templates
 ├── repositories
 │   └── repository.go
 ├── controllers
@@ -25,7 +25,7 @@ testdata
 For instance, the usecase template is below. templates are written with `text/template`.
 
 ```go
-testdata/usercase/usecase.go
+// templates/usercase/usecase.go
 package usecase
 
 type {{ .Action | title}}{{ .Model | title }}Input struct{}
