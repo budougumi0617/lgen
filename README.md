@@ -7,6 +7,102 @@ lgen
 
 ## Description
 
+Generate boilerplates for layered architecture by your templates.
+
+At first, we prepare layered structure and templates.
+
+```bash
+$ tree templates
+testdata
+├── repositories
+│   └── repository.go
+├── controllers
+│   └── controller.go
+└── usercases
+    └── usecase.go
+```
+
+For instance, the usecase template is below. templates are written with `text/template`.
+
+```go
+testdata/usercase/usecase.go
+package usecase
+
+type {{ .Action | title}}{{ .Model | title }}Input struct{}
+
+type {{ .Action | title}}{{ .Model | title }}Result struct{}
+
+type {{ .Action | title}}{{ .Model | title }}Usecase interface {
+  Run({{ .Action | title}}{{ .Model | title }}Input) ({{ .Action | title}}{{ .Model | title }}Result, error)
+}
+
+func New{{ .Action | title}}{{ .Model | title }}Usecase() {{ .Action | title}}{{ .Model | title }}Usecase {
+  return &{{ .Action }}{{ .Model | title }}Usecase{
+  }
+}
+
+type {{ .Action }}{{ .Model | title }}Usecase struct {}
+
+func (u *{{ .Action }}{{ .Model | title }}Usecase) Run(
+    in {{ .Action | title}}{{ .Model | title }}Input,
+  ) ({{ .Action | title}}{{ .Model | title }}Result, error){
+  // Need to implement usercase logic
+  return {{ .Action | title}}{{ .Model | title }}Result{
+    // Need to build result
+  }
+}
+```
+
+Execute `lgen` with `Action` and `Model` strings.
+
+```bash
+$ lgen -action Get -model User -template ./testdata -dist myproduct
+```
+
+The generated directories and files are below.
+
+
+```bash
+$ tree myproduct
+myproduct
+├── controllers
+│   └── get_user_controller.go
+└── usercases
+    └── get_user_usecase.go
+
+2 directories, 2 files
+```
+
+The get_user_usercase.go is below. We are enabled to write miltiple files by a command.
+
+```go
+package usecase
+
+type GetUserInput struct{}
+
+type GetUserResult struct{}
+
+type GetUserUsecase interface {
+        Run(GetUserInput) (GetUserResult, error)
+}
+
+func NewGetUserUsecase() GetUserUsecase {
+        return &getUserUsecase{}
+}
+
+type getUserUsecase struct{}
+
+func (u *getUserUsecase) Run(
+        in GetUserInput,
+) (GetUserResult, error) {
+        // Need to implement usercase logic
+        return GetUserResult{
+                // Need to build result
+        }
+}
+```
+
+
 ## Synopsis
 ```
 $ lgen -a get -m user -template /your/templates/directory -dist /your/project/root/directory
