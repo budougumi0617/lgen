@@ -38,22 +38,26 @@ type Params struct {
 func fill(args []string, outStream, errStream io.Writer) (*lgen, error) {
 	var v bool
 	var a, m, t, d string
-	vdesc := "print version information and quit."
-	adesc := "action name"
-	mdesc := "model name"
 	cn := args[0]
 	flags := flag.NewFlagSet(cn, flag.ContinueOnError)
 	flags.SetOutput(errStream)
 
+	vdesc := "print version information and quit."
 	flags.BoolVar(&v, "version", false, vdesc)
 	flags.BoolVar(&v, "v", false, vdesc)
+
+	adesc := "action name"
 	flags.StringVar(&a, "action", "", adesc)
 	flags.StringVar(&a, "a", "", adesc)
+
+	mdesc := "model name"
 	flags.StringVar(&m, "model", "", mdesc)
 	flags.StringVar(&m, "m", "", mdesc)
+
 	tdesc := "templates directory"
 	flags.StringVar(&t, "template", "", tdesc)
 	flags.StringVar(&t, "t", "./templates", tdesc)
+
 	ddesc := "output directory"
 	flags.StringVar(&d, "dist", "", ddesc)
 	flags.StringVar(&d, "d", "./", ddesc)
@@ -70,6 +74,9 @@ func fill(args []string, outStream, errStream io.Writer) (*lgen, error) {
 		msg := "need to set action name and model name"
 		return nil, fmt.Errorf(msg)
 	}
+	a = strings.ToLower(a)
+	// FIXME: not support compound word.
+	m = strings.ToLower(m)
 
 	nargs := flags.Args()
 	if len(nargs) > 0 {
@@ -79,11 +86,11 @@ func fill(args []string, outStream, errStream io.Writer) (*lgen, error) {
 	var err error
 	t, err = filepath.Abs(t)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	d, err = filepath.Abs(d)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return &lgen{
 		params: Params{
@@ -111,24 +118,20 @@ func (l *lgen) buildFileName(base string) string {
 }
 
 func (l *lgen) walk(path string, info os.FileInfo, err error) error {
-	fmt.Printf("path = %+v\n", path)
-
 	p, err := filepath.Rel(l.template, path)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	fp := filepath.Join(l.dist, p)
 
 	if info.IsDir() {
 		// make same directory structure in distribution.
 		if err := os.MkdirAll(fp, 0777); err != nil {
-			fmt.Println("mkdillall")
-			panic(err)
+			return err
 		}
 		return nil
 	}
 	if filepath.Ext(path) != ".go" {
-		fmt.Println("skip file!!")
 		return nil
 	}
 
@@ -136,32 +139,22 @@ func (l *lgen) walk(path string, info os.FileInfo, err error) error {
 	sp := filepath.Join(dn, l.buildFileName(fn))
 
 	buf := bytes.Buffer{}
-	// TODO: load template from file.
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Println("ioutl.ReadFile")
-		panic(err)
+		return err
 	}
 
-	dtmpl := `action = "{{- .Action }}"
-model: "{{- .Model }}"
-`
-	dtmpl = string(b)
+	dtmpl := string(b)
 	if err := template.Must(template.New(sp).Funcs(fmap).Parse(dtmpl)).Execute(&buf, l.params); err != nil {
-		fmt.Println("template execute")
-		panic(err)
+		return err
 	}
 
 	// execute gofmt
 	codes, err := format.Source(buf.Bytes())
 	if err != nil {
-		fmt.Printf("%q\n", buf.Bytes())
-		panic(err)
+		return err
 	}
 
-	fmt.Printf("l.params.Action = %q\n", l.params.Action)
-	fmt.Printf("codes = %q\n", codes)
-	fmt.Printf("codes = %q\n", codes)
 	// TODO: Need warning if overwrite file?
 	f, err := os.Create(sp)
 	if err != nil {
@@ -170,7 +163,7 @@ model: "{{- .Model }}"
 	defer func() { _ = f.Close() }()
 
 	if _, err = f.Write(codes); err != nil {
-		panic(err)
+		return err
 	}
 	return nil
 }
@@ -181,6 +174,5 @@ func Run(args []string, outStream, errStream io.Writer) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%v", lgen)
 	return lgen.run()
 }
