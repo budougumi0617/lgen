@@ -2,8 +2,10 @@ lgen
 ===================
 
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
+[![GolangCI](https://golangci.com/badges/github.com/budougumi0617/lgen.svg)][golangci]
 
 [license]: https://github.com/budougumi0617/lgen/blob/master/LICENSE
+[golangci]:https://golangci.com/r/github.com/budougumi0617/lgen
 
 ## Description
 
