@@ -150,6 +150,15 @@ If you want to install on MacOS, you can use Homebrew.
 brew install budougumi0617/tap/lgen
 ```
 
+## Template rules
+The template must be created according to the following rules.
+
+1. Base on `text/template` package.
+1. Varialbes are `Action`, and `Model` only.
+1. `Functions` are supported below:
+    1. basic functions https://golang.org/pkg/text/template/#hdr-Functions
+    1. `title` - [`strings.ToTitle`](https://golang.org/pkg/strings/#ToTitle)
+
 ## Contribution
 1. Fork ([https://github.com/budougumi0617/lgen/fork](https://github.com/budougumi0617/lgen/fork))
 2. Create a feature branch
