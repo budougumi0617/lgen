@@ -110,6 +110,7 @@ var fmap = template.FuncMap{
 
 // make file name with action and model.
 func (l *lgen) buildFileName(base string) string {
+	base = strings.Replace(base, ".tmpl", ".go", 1)
 	return strings.ToLower(strings.Join([]string{l.params.Action, l.params.Model, base}, "_"))
 }
 
@@ -127,7 +128,7 @@ func (l *lgen) walk(path string, info os.FileInfo, err error) error {
 		}
 		return nil
 	}
-	if filepath.Ext(path) != ".go" {
+	if filepath.Ext(path) != ".tmpl" {
 		return nil
 	}
 
