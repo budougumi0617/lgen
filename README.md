@@ -17,17 +17,17 @@ At first, we prepare layered structure and templates.
 $ tree templates
 templates
 ├── repositories
-│   └── repository.go
+│   └── repository.tmpl
 ├── controllers
-│   └── controller.go
+│   └── controller.tmpl
 └── usercases
-    └── usecase.go
+    └── usecase.tmpl
 ```
 
 For instance, the usecase template is below. templates are written with `text/template`.
 
 ```go
-// templates/usercase/usecase.go
+// templates/usercase/usecase.tmpl
 package usecase
 
 type {{ .Action | title}}{{ .Model | title }}Input struct{}
@@ -67,6 +67,8 @@ The generated directories and files are below.
 ```bash
 $ tree myproduct
 myproduct
+├── repositories
+│   └── get_user_repository.go
 ├── controllers
 │   └── get_user_controller.go
 └── usercases
@@ -154,6 +156,7 @@ brew install budougumi0617/tap/lgen
 The template must be created according to the following rules.
 
 1. Base on `text/template` package.
+1. template file extension is only `.tmpl`.
 1. Varialbes are `Action`, and `Model` only.
 1. `Functions` are supported below:
     1. basic functions https://golang.org/pkg/text/template/#hdr-Functions
